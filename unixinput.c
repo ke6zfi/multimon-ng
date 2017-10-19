@@ -105,6 +105,10 @@ extern int cw_threshold;
 extern bool cw_disable_auto_threshold;
 extern bool cw_disable_auto_timing;
 
+#ifdef MQTT
+extern struct mosquitto *mosq=NULL;
+#endif
+
 void quit(void);
 
 /* ---------------------------------------------------------------------- */
@@ -379,6 +383,9 @@ static void input_sound(unsigned int sample_rate, unsigned int overlap,
     }
 #endif
     for (;;) {
+#ifdef MQTT
+    	mosquitto_loop(mosq, 0, 1);
+#endif
         if (fmt) {
             perror("ioctl: 8BIT SAMPLES NOT SUPPORTED!");
             exit (10);
@@ -510,6 +517,9 @@ static void input_file(unsigned int sample_rate, unsigned int overlap,
      * demodulate
      */
     for (;;) {
+#ifdef MQTT
+    	mosquitto_loop(mosq, 0, 1);
+#endif
         i = read(fd, sp = buffer, sizeof(buffer));
         if (i < 0 && errno != EAGAIN) {
             perror("read");
@@ -543,6 +553,15 @@ static void input_file(unsigned int sample_rate, unsigned int overlap,
 #endif
 }
 
+#ifdef MQTT
+void connect_callback(struct mosquitto *mosq, void *obj, int result)
+{
+  	fprintf(stderr,"MQTT connect callback, rc=%d\n", result);
+}
+
+#endif
+
+
 void quit(void)
 {
     int i = 0;
@@ -556,6 +575,8 @@ void quit(void)
 
 /* ---------------------------------------------------------------------- */
 
+//TODO: add base topic
+//TODO: add broker options
 static const char usage_str[] = "\n"
         "Usage: %s [file] [file] [file] ...\n"
         "  If no [file] is given, input will be read from your default sound\n"
@@ -602,7 +623,11 @@ int main(int argc, char *argv[])
     int sample_rate = -1;
     unsigned int overlap = 0;
     char *input_type = "hw";
-
+#ifdef MQTT
+    char clientid[24];
+    char mqtt_host[]="localhost";
+	int mqtt_port = 1883;
+#endif
     static struct option long_options[] =
       {
         {"timestamp", no_argument, &timestamp, 1},
@@ -774,6 +799,31 @@ intypefound:
 	    break;
         }
     }
+#ifdef MQTT
+    mosquitto_lib_init();
+	snprintf(clientid, 23, "multimon-ng_%d", getpid());
+	mosq = mosquitto_new(clientid, true, NULL);
+	if(mosq){
+		mosquitto_connect_callback_set(mosq, connect_callback);
+		//mosquitto_message_callback_set(mosq, message_callback);
+
+	    int rc = mosquitto_connect(mosq, mqtt_host, mqtt_port, 60);
+	    fprintf(stderr,"mosquitto_connect ret:%d",rc);
+	    rc = mosquitto_loop(mosq, -1, 1);
+		//mosquitto_subscribe(mosq, NULL, "#", 0);
+
+/*		while(run){
+			rc = mosquitto_loop(mosq, -1, 1);
+			if(run && rc){
+				sleep(20);
+				mosquitto_reconnect(mosq);
+			}
+		}*/
+//		mosquitto_destroy(mosq);
+} else {
+	fprintf(stderr,"Failed to start libmosquitto");
+}
+#endif
 
 
     if ( !quietflg )

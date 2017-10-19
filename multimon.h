@@ -36,6 +36,11 @@
 #include "msvc_support.h"
 #endif
 
+#ifdef MQTT
+#include <mosquitto.h>
+#endif
+
+
 /* ---------------------------------------------------------------------- */
 
 extern const float costabf[0x400];
@@ -281,6 +286,7 @@ struct demod_param {
 
 /* ---------------------------------------------------------------------- */
 
+extern struct mosquitto *mosq;
 extern const struct demod_param demod_poc5;
 extern const struct demod_param demod_poc12;
 extern const struct demod_param demod_poc24;
@@ -329,7 +335,7 @@ extern const struct demod_param demod_scope;
 #define ALL_DEMOD &demod_poc5, &demod_poc12, &demod_poc24, &demod_flex, &demod_eas, &demod_ufsk1200, &demod_clipfsk, &demod_fmsfsk, \
     &demod_afsk1200, &demod_afsk2400, &demod_afsk2400_2, &demod_afsk2400_3, &demod_hapn4800, \
     &demod_fsk9600, &demod_dtmf, &demod_zvei1, &demod_zvei2, &demod_zvei3, &demod_dzvei, \
-    &demod_pzvei, &demod_eea, &demod_eia, &demod_ccir, &demod_morse, &demod_dumpcsv, &demod_x10 SCOPE_DEMOD
+    &demod_pzvei, &demod_eea, &demod_eia, &demod_ccir, &demod_morse
 
 
 /* ---------------------------------------------------------------------- */

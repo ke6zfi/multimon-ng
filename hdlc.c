@@ -128,13 +128,21 @@ static void aprs_disp_packet(unsigned char *bp, unsigned int len)
 	// end of header
 	bp += 2;
 	len -= 2;
+
 	if(!len)
 		return;
+    char topic[512];
+    snprintf(topic,sizeof(topic),"/aprs/%d","unknown");
+	int rc=mosquitto_publish(mosq,NULL,topic,len,bp,0,false);
+
+
 	while (len) {
 		verbprintf(0, "%c",*bp++);
 		len--;
 	}
 	verbprintf(0, "\n");
+	verbprintf(0, "MQTT Pub: %d\n",rc);
+
 }
 
 static void ax25_disp_packet(struct demod_state *s, unsigned char *bp, unsigned int len)

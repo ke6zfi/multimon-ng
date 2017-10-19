@@ -54,7 +54,6 @@ SOURCES += \
     fms.c \
     demod_eas.c \
     demod_morse.c \
-    demod_dumpcsv.c \
     demod_x10.c
 
 macx{
@@ -99,10 +98,12 @@ SOURCES +=  xdisplay.c \
 unix:linux-g++-64:!symbian:!macx{
 #DEFINES += ARCH_X86_64
 DEFINES += PULSE_AUDIO
+DEFINES += MQTT
 DEFINES += CHARSET_UTF8
-LIBS += -lX11 -lpulse-simple -lpulse
-SOURCES +=  xdisplay.c \
-            demod_display.c
+DEFINES += NO_X11
+LIBS += -lpulse-simple -lpulse -lmosquitto
+#SOURCES +=  xdisplay.c \
+#            demod_display.c
 }
 
 unix:linux-g++:!symbian:!macx{

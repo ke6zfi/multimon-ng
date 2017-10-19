@@ -426,6 +426,10 @@ static void pocsag_printmessage(struct demod_state *s, bool sync)
                 verbprintf(0, "Numeric: %s", num_string);
                 if(!sync) verbprintf(2,"<LOST SYNC>");
                 verbprintf(0,"\n");
+                char topic[512];
+                snprintf(topic,sizeof(topic),"/paging/%d",s->l2.pocsag.address);
+            	int rc=mosquitto_publish(mosq,NULL,topic,strlen(num_string),num_string,0,false);
+
             }
 
             if((pocsag_mode == POCSAG_MODE_ALPHA) || ((pocsag_mode == POCSAG_MODE_AUTO) && (guess_alpha >= 20 || unsure)))
@@ -440,6 +444,10 @@ static void pocsag_printmessage(struct demod_state *s, bool sync)
                 verbprintf(0, "Alpha:   %s", alpha_string);
                 if(!sync) verbprintf(2,"<LOST SYNC>");
                 verbprintf(0,"\n");
+                char topic[512];
+                snprintf(topic,sizeof(topic),"/paging/%d",s->l2.pocsag.address);
+            	int rc=mosquitto_publish(mosq,NULL,topic,strlen(alpha_string),alpha_string,0,false);
+
             }
 
             if((pocsag_mode == POCSAG_MODE_SKYPER) || ((pocsag_mode == POCSAG_MODE_AUTO) && (guess_skyper >= 20 || unsure)))
